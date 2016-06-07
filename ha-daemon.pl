@@ -6,10 +6,10 @@ use English;
 use TOML;
 use File::Slurp;
 use Sys::Syslog qw(:standard :macros);
-use Net::MQTT::Simple;
-use threads;
-use threads::shared;
 
+use AnyEvent;
+use AnyEvent::Loop;
+use AnyEvent::MQTT;
 use Daemon::OneWire;
 
 
@@ -48,13 +48,15 @@ loadConfig();
 my %threads;
 
 my $oneWireConfig = $config->{'1wire'};
-my $mqttConfig = $config->{'mqtt'};
+
+my %mqttConfig = %{$config->{'mqtt'}};
+$mqttConfig{on_error} = sub { my ($fatal, $message) = @ARG; warn $message; };
+$mqttConfig{client_id} = 'HomeAutomation Central';
+
+my $mqtt = new AnyEvent::MQTT(%mqttConfig);
 
 if (defined $oneWireConfig) {
-	my $oneWire = new Daemon::OneWire($oneWireConfig, $mqttConfig);
-	%threads = (%threads, $oneWire->run());
+	my $oneWire = new Daemon::OneWire($oneWireConfig, $mqtt);
 }
 
-foreach my $thread (keys %threads) {
-	$threads{$thread}->join();
-}
+AnyEvent::Loop::run;

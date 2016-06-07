@@ -1,7 +1,10 @@
 [1wire]
-	server="localhost:4304"
-	sensor_period=300000000 # microseconds
-	switch_period=50000 # microseconds
+	host="localhost"
+	port=4304
+	timeout=5 # seconds, will reconnect after this if no response
+	sensor_period=30 # seconds
+	switch_period=0.05 # seconds
 
 [mqtt]
-	server="localhost"
+	host="localhost"
+	port=1883
