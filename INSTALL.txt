@@ -1,0 +1,4 @@
+Fedora
+dnf install swig
+Build & install owfs source with --enable-swig (needed for OW.pm)
+cpan TOML Net::MQTT::Simple

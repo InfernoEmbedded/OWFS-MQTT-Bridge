@@ -1,0 +1,7 @@
+[1wire]
+	server="localhost:4304"
+	sensor_period=300000000 # microseconds
+	switch_period=50000 # microseconds
+
+[mqtt]
+	server="localhost"
