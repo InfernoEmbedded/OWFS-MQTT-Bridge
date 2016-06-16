@@ -50,6 +50,7 @@ sub new {
 	$self->setupSimultaneousRead();
 	$self->setupReadSwitchDevices();
 	$self->setupCVCleanup();
+	$self->setupRefreshDeviceCache();
 
 	return $self;
 }
