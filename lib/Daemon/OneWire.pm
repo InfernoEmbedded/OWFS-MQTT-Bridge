@@ -4,9 +4,6 @@ use strict;
 use warnings;
 use English;
 use Sys::Syslog qw(:standard :macros);
-use threads;
-use threads::shared;
-use Thread::Semaphore;
 
 use AnyEvent;
 use AnyEvent::MQTT;
@@ -41,7 +38,7 @@ sub new {
 	$self->{CVS} = [];
 
 	$self->connect();
-	$self->refreshDeviceCache();
+	$self->setupRefreshDeviceCache();
 
 	# Set up listeners
 	$self->setupSwitchSubscriptions();
@@ -50,7 +47,6 @@ sub new {
 	$self->setupSimultaneousRead();
 	$self->setupReadSwitchDevices();
 	$self->setupCVCleanup();
-	$self->setupRefreshDeviceCache();
 
 	return $self;
 }

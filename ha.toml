@@ -1,3 +1,6 @@
+[general]
+	timezone="Australia/Sydney"
+
 [1wire]
 	host="localhost"
 	port=4304
@@ -8,3 +11,8 @@
 [mqtt]
 	host="localhost"
 	port=1883
+
+[database]
+	dsn="dbi:SQLite:ha.db"
+	user=""
+	password=""
