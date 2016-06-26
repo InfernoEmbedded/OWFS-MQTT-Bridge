@@ -9,7 +9,7 @@ use AnyEvent;
 use AnyEvent::MQTT;
 use AnyEvent::OWNet;
 
-my $owLock : shared;
+use base 'Daemon';
 
 ##
 # Create a new OneWire daemon
@@ -50,16 +50,6 @@ sub new {
 	$self->setupCVCleanup();
 
 	return $self;
-}
-
-##
-# Wire a debug message
-sub debug {
-	my ($self, @args) = @ARG;
-
-	return unless $self->{DEBUG};
-
-	warn @args, "\n";
 }
 
 ##
