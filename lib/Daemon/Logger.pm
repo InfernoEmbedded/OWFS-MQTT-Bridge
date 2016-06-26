@@ -6,6 +6,11 @@ use English;
 
 use AnyEvent;
 use AnyEvent::MQTT;
+use AnyEvent::Loop;
+
+use aliased 'DBIx::Class::DeploymentHandler' => 'DH';
+use DB::Schema;
+
 use DateTime;
 use DateTime::Format::Strptime;
 use Time::HiRes qw(time);
@@ -13,24 +18,68 @@ use Time::HiRes qw(time);
 ##
 # Create a new logger daemon
 # @param class the class of this object
-# @param db the database instance
-# @param mqtt the MQTT instance
+# @param dbConfig the database config
+# @param mqttConfig the MQTT config (hashref)
 sub new {
-	my ( $class, $db, $generalConfig, $mqtt ) = @ARG;
+	my ( $class, $dbConfig, $generalConfig, $mqttConfig ) = @ARG;
 
 	my $self = {};
 	bless $self, $class;
 
-	$self->{MQTT} = $mqtt;
-	$self->{DB}   = $db;
+	$self->{MQTT_CONFIG} = $mqttConfig;
+	$self->{CONFIG} = $dbConfig;
+	$self->connectDatabase($dbConfig);
 
 	$self->{TIMEZONE} = $generalConfig->{timezone};
+
+	return $self;
+}
+
+##
+# Connect to the database
+sub connectDatabase {
+	my ($self) = @ARG;
+
+	$self->{DB} = DB::Schema->connect( $self->{CONFIG}->{dsn}, $self->{CONFIG}->{user}, $self->{CONFIG}->{password} );
+}
+
+##
+# Install the database schema
+sub installDatabase {
+	my ( $self ) = @ARG;
+
+	$self->{CONFIG}->{dsn} =~ /:(.+):/
+	  or die "Could not extract DB type from DSN '$self->{CONFIG}->{dsn}'";
+	my $dbType = $1;
+
+	my $dh = DH->new(
+		{
+			schema              => $self->{DB},
+			databases           => $dbType,
+			sql_translator_args => { add_drop_table => 0, force_overwrite => 1 },
+		}
+	);
+
+	$dh->prepare_install;
+	$dh->install;
+}
+
+##
+# Run the DB logging daemon in a new process
+sub run {
+	my ($self) = @ARG;
+
+	fork and return;
+
+	$self->{MQTT_CONFIG}->{client_id} = 'HomeAutomation logging daemon';
+
+	$self->{MQTT} = new AnyEvent::MQTT(%{$self->{MQTT_CONFIG}});
 
 	$self->setupGpioSubscriptions();
 	$self->setupTemperatureSubscriptions();
 	$self->setupTemperatureArchive();
 
-	return $self;
+	AnyEvent::Loop::run;
 }
 
 ##

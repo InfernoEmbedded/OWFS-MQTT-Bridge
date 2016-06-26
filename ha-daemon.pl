@@ -14,9 +14,6 @@ use AnyEvent;
 use AnyEvent::Loop;
 use AnyEvent::MQTT;
 
-use aliased 'DBIx::Class::DeploymentHandler' => 'DH';
-use DB::Schema;
-
 use Daemon::OneWire;
 use Daemon::Logger;
 
@@ -50,36 +47,6 @@ sub loadConfig {
 	readConfig($file);
 }
 
-##
-# Connect to the database
-sub connectDatabase {
-	my ($dbConfig) = @ARG;
-
-	my $db = DB::Schema->connect( $dbConfig->{dsn}, $dbConfig->{user}, $dbConfig->{password} );
-
-	return $db;
-}
-
-##
-# Install the database schema
-sub installDatabase {
-	my ( $db, $dbConfig ) = @ARG;
-
-	$dbConfig->{dsn} =~ /:(.+):/
-	  or die "Could not extract DB type from DSN '$dbConfig->{dsn}'";
-	my $dbType = $1;
-
-	my $dh = DH->new(
-		{
-			schema              => $db,
-			databases           => $dbType,
-			sql_translator_args => { add_drop_table => 0, force_overwrite => 1 },
-		}
-	);
-
-	$dh->prepare_install;
-	$dh->install;
-}
 
 GetOptions(
 	"install" => \$install,
@@ -98,18 +65,18 @@ my $dbConfig      = $config->{'database'};
 our $generalConfig = $config->{'general'};
 
 my %mqttConfig = %{ $config->{'mqtt'} };
-$mqttConfig{on_error} = sub { my ( $fatal, $message ) = @ARG; warn $message; };
+$mqttConfig{on_error} = sub { my ( $fatal, $message ) = @ARG; warn ("MQTT error on $mqttConfig{host}:$mqttConfig{port}: $message"); };
 $mqttConfig{client_id} = 'HomeAutomation Central';
 
-my $mqtt = new AnyEvent::MQTT(%mqttConfig);
-my $db   = connectDatabase($dbConfig);
-
+my $logger = new Daemon::Logger( $dbConfig, $generalConfig, \%mqttConfig );
 if ($install) {
-	installDatabase( $db, $dbConfig )
+	$logger->installDatabase( $dbConfig )
 	  or die "DB creation failed";
 }
+$logger->run();
 
-my $logger = new Daemon::Logger( $db, $generalConfig, $mqtt );
+
+my $mqtt = new AnyEvent::MQTT(%mqttConfig);
 
 if ( defined $oneWireConfig ) {
 	my $oneWire = new Daemon::OneWire( $oneWireConfig, $mqtt );
