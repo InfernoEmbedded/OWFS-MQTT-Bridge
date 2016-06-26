@@ -25,6 +25,7 @@ sub new {
 	$self->{ONEWIRE_CONFIG} = $oneWireConfig;
 	$self->{SENSOR_PERIOD}  = $oneWireConfig->{sensor_period} // 30;
 	$self->{SWITCH_PERIOD}  = $oneWireConfig->{switch_period} // 0.05;
+	$self->{DEBUG} = $oneWireConfig->{debug};
 
 	$self->{MQTT} = $mqtt;
 
@@ -49,6 +50,16 @@ sub new {
 	$self->setupCVCleanup();
 
 	return $self;
+}
+
+##
+# Wire a debug message
+sub debug {
+	my ($self, @args) = @ARG;
+
+	return unless $self->{DEBUG};
+
+	warn @args, "\n";
 }
 
 ##
@@ -104,13 +115,13 @@ sub readTemperatureDevices {
 
 	foreach my $family (@temperatureFamilies) {
 
-		#warn "Reading temperatures, family='$family'";
+		$self->debug("Reading temperatures, family='$family'");
 		next unless defined $self->{DEVICES}->{$family};
 
 		my @devices = @{ $self->{DEVICES}->{$family} };
 		foreach my $device (@devices) {
 
-			#warn "Reading temperature for device '$device'";
+			$self->debug("Reading temperature for device '$device'");
 			$self->{OWFS}->read(
 				$device . 'temperature',
 				sub {
@@ -123,7 +134,7 @@ sub readTemperatureDevices {
 
 					$value =~ s/ *//;
 
-					#warn "Temperature = '$value'";
+					$self->debug("Temperature = '$value'");
 					return
 					  if ( defined $self->{TEMPERATURE_CACHE}->{$device}
 						&& $self->{TEMPERATURE_CACHE}->{$device} == $value );
@@ -228,14 +239,13 @@ sub readSwitchDevices {
 	my $cv = AnyEvent->condvar;
 
 	foreach my $family (@switchFamilies) {
-
-		#warn "Reading switches for family '$family'";
+		#$self->debug("Reading switches for family '$family'");
 
 		next unless defined $self->{DEVICES}->{$family};
 		my @devices = @{ $self->{DEVICES}->{$family} };
 		foreach my $device (@devices) {
 
-			#warn "Reading switches for device '$device'";
+			#$self->debug("Reading switches for device '$device'");
 
 			$self->{OWFS}->read(
 				"/uncached/${device}sensed.ALL",
@@ -263,7 +273,7 @@ sub readSwitchDevices {
 								);
 							}
 
-							#warn "Publish: '$topic'='$state'";
+							$self->debug("Publish: '$topic'='$state'");
 
 							$self->{MQTT}->publish(
 								topic   => $topic,

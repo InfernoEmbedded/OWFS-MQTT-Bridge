@@ -7,6 +7,7 @@
 	timeout=5 # seconds, will reconnect after this if no response
 	sensor_period=30 # seconds
 	switch_period=0.1 # seconds
+	debug=true
 
 [mqtt]
 	host="localhost"
