@@ -17,6 +17,7 @@ use AnyEvent::MQTT;
 use Daemon::OneWire;
 use Daemon::WeMo;
 use Daemon::Logger;
+use Daemon::Mapper;
 
 my $config;
 
