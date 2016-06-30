@@ -17,3 +17,7 @@
 	dsn="dbi:SQLite:ha.db"
 	user=""
 	password=""
+
+[wemo]
+	debug=true
+	switch_period=1 # seconds

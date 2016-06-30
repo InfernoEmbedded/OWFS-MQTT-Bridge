@@ -11,26 +11,23 @@ use AnyEvent::Loop;
 use aliased 'DBIx::Class::DeploymentHandler' => 'DH';
 use DB::Schema;
 
-use DateTime;
-use DateTime::Format::Strptime;
-use Time::HiRes qw(time);
+use base 'Daemon';
 
 ##
 # Create a new logger daemon
 # @param class the class of this object
+# @param generalConfig the general configuration
 # @param dbConfig the database config
 # @param mqttConfig the MQTT config (hashref)
 sub new {
-	my ( $class, $dbConfig, $generalConfig, $mqttConfig ) = @ARG;
+	my ( $class, $generalConfig, $dbConfig, $mqttConfig ) = @ARG;
 
-	my $self = {};
+	my $self = $class->SUPER::new($generalConfig);
 	bless $self, $class;
 
 	$self->{MQTT_CONFIG} = $mqttConfig;
 	$self->{CONFIG} = $dbConfig;
 	$self->connectDatabase($dbConfig);
-
-	$self->{TIMEZONE} = $generalConfig->{timezone};
 
 	return $self;
 }
@@ -69,7 +66,10 @@ sub installDatabase {
 sub run {
 	my ($self) = @ARG;
 
-	fork and return;
+	my $pid = fork();
+	if ($pid) {
+		return $pid;
+	}
 
 	$self->{MQTT_CONFIG}->{client_id} = 'HomeAutomation logging daemon';
 
@@ -117,22 +117,6 @@ sub setupTemperatureSubscriptions {
 }
 
 ##
-# Get the current time in a db suitable format
-sub getCurrentTime {
-	my ($self) = @ARG;
-
-	my $formatter = DateTime::Format::Strptime->new( pattern => '%Y-%m-%d %T.%3N', );
-
-	my $time = DateTime->from_epoch(
-		time_zone => $self->{TIMEZONE},
-		epoch     => time(),
-		formatter => $formatter,
-	);
-
-	return $time;
-}
-
-##
 # Log a switch message to the database
 # @param topic the MQTT topic
 # @param message the MQTT message
@@ -146,7 +130,7 @@ sub logSwitchState {
 	my $rec = $self->{DB}->resultset('SwitchLog')->new(
 		{
 			device => $1,
-			time   => $self->getCurrentTime() . '',    # Stringify here to force milliseconds
+			time   => $self->getCurrentTimeDB() . '',    # Stringify here to force milliseconds
 			value  => $message,
 		}
 	);
@@ -167,7 +151,7 @@ sub logOnOffState {
 	my $rec = $self->{DB}->resultset('OnOffLog')->new(
 		{
 			device => $1,
-			time   => $self->getCurrentTime() . '',    # Stringify here to force milliseconds
+			time   => $self->getCurrentTimeDB() . '',    # Stringify here to force milliseconds
 			value  => $message,
 		}
 	);
@@ -188,7 +172,7 @@ sub logTemperature {
 	my $rec = $self->{DB}->resultset('TemperatureReading')->new(
 		{
 			device => $1,
-			time   => $self->getCurrentTime() . '',    # Stringify here to force milliseconds
+			time   => $self->getCurrentTimeDB() . '',    # Stringify here to force milliseconds
 			value  => $message,
 		}
 	);
@@ -204,7 +188,7 @@ sub setupTemperatureArchive {
 		after    => 0,
 		interval => 5 * 60,
 		cb       => sub {
-			$self->archiveDaysTemperatures( $self->getCurrentTime() );
+			$self->archiveDaysTemperatures( $self->getCurrentTimeDB() );
 
 			my $time = DateTime->from_epoch(
 				time_zone => $self->{TIMEZONE},
@@ -214,7 +198,7 @@ sub setupTemperatureArchive {
 			$midnight->truncate( to => 'day' );
 
 			if ( $time->add( minutes => 5 )->subtract_datetime($midnight)->is_negative() ) {    # Final processing for yesterday
-				$self->archiveDaysTemperatures( $self->getCurrentTime()->subtract( days => 1 ) );
+				$self->archiveDaysTemperatures( $self->getCurrentTimeDB()->subtract( days => 1 ) );
 			}
 		}
 	);

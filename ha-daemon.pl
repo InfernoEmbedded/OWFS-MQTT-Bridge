@@ -15,6 +15,7 @@ use AnyEvent::Loop;
 use AnyEvent::MQTT;
 
 use Daemon::OneWire;
+use Daemon::WeMo;
 use Daemon::Logger;
 
 my $config;
@@ -28,7 +29,8 @@ my $upgrade;
 sub readConfig {
 	my ($file) = @ARG;
 
-	my $fileContents = read_file($file) or die "Could not read config file '$file': $OS_ERROR";
+	my $fileContents = read_file($file)
+	  or die "Could not read config file '$file': $OS_ERROR";
 
 	my $err;
 	( $config, $err ) = TOML::from_toml($fileContents);
@@ -47,7 +49,6 @@ sub loadConfig {
 	readConfig($file);
 }
 
-
 GetOptions(
 	"install" => \$install,
 	"upgrade" => \$upgrade
@@ -59,27 +60,52 @@ syslog( LOG_DEBUG, 'loading config' );
 loadConfig();
 
 my %threads;
+my @children;
 
 my $oneWireConfig = $config->{'1wire'};
+my $wemoConfig    = $config->{'wemo'};
 my $dbConfig      = $config->{'database'};
 our $generalConfig = $config->{'general'};
 
 my %mqttConfig = %{ $config->{'mqtt'} };
-$mqttConfig{on_error} = sub { my ( $fatal, $message ) = @ARG; warn ("MQTT error on $mqttConfig{host}:$mqttConfig{port}: $message"); };
+$mqttConfig{on_error} = sub {
+	my ( $fatal, $message ) = @ARG;
+	warn("MQTT error on $mqttConfig{host}:$mqttConfig{port}: $message");
+};
 $mqttConfig{client_id} = 'HomeAutomation Central';
 
-my $logger = new Daemon::Logger( $dbConfig, $generalConfig, \%mqttConfig );
+my $logger =
+  new Daemon::Logger( $generalConfig, $dbConfig, \%mqttConfig );
 if ($install) {
-	$logger->installDatabase( $dbConfig )
+	$logger->installDatabase($dbConfig)
 	  or die "DB creation failed";
 }
-$logger->run();
+push @children, $logger->run();
 
+my $mapper = new Daemon::Mapper($generalConfig, $dbConfig, \%mqttConfig );
+push @children, $mapper->run();
+
+if ( defined $wemoConfig ) {
+	my $wemo = new Daemon::WeMo( $generalConfig, $wemoConfig, \%mqttConfig );
+	push @children, $wemo->run();
+}
 
 my $mqtt = new AnyEvent::MQTT(%mqttConfig);
 
 if ( defined $oneWireConfig ) {
-	my $oneWire = new Daemon::OneWire( $oneWireConfig, $mqtt );
+	my $oneWire = new Daemon::OneWire( $generalConfig, $oneWireConfig, $mqtt );
 }
 
+
+$SIG{KILL} = sub {
+	warn "Stop requested, killing children\n";
+
+	kill '-KILL', @children;
+	foreach my $child (@children) {
+		warn "Waiting for '$child'\n";
+		waitpid $child, 0;
+	}
+};
+
 AnyEvent::Loop::run;
+

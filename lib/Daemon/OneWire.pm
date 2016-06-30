@@ -17,15 +17,15 @@ use base 'Daemon';
 # @param oneWireConfig the one wire configuration
 # @param mqtt the MQTT instance
 sub new {
-	my ( $class, $oneWireConfig, $mqtt ) = @ARG;
+	my ( $class, $generalConfig, $oneWireConfig, $mqtt ) = @ARG;
 
-	my $self = {};
+	my $self = $class->SUPER::new($generalConfig);
 	bless $self, $class;
 
 	$self->{ONEWIRE_CONFIG} = $oneWireConfig;
 	$self->{SENSOR_PERIOD}  = $oneWireConfig->{sensor_period} // 30;
 	$self->{SWITCH_PERIOD}  = $oneWireConfig->{switch_period} // 0.05;
-	$self->{DEBUG} = $oneWireConfig->{debug};
+	$self->{DEBUG}          = $oneWireConfig->{debug};
 
 	$self->{MQTT} = $mqtt;
 
@@ -34,9 +34,6 @@ sub new {
 	$self->{GPIO_CACHE}        = {};
 	$self->{TEMPERATURE_CACHE} = {};
 	$self->{DEVICES}           = {};
-
-	# List of pending tasks
-	$self->{CVS} = [];
 
 	$self->connect();
 	$self->setupRefreshDeviceCache();
@@ -47,29 +44,8 @@ sub new {
 	# Kick off tasks
 	$self->setupSimultaneousRead();
 	$self->setupReadSwitchDevices();
-	$self->setupCVCleanup();
 
 	return $self;
-}
-
-##
-# Clean up any outstanding CVs
-sub setupCVCleanup {
-	my ($self) = @ARG;
-
-	$self->{CLEANUP_CVS_TIMER} = AnyEvent->timer(
-		after    => 0,
-		interval => 10,
-		cb       => sub {
-			my @pendingCvs;
-
-			foreach my $cv ( @{ $self->{CVS} } ) {
-				push( @pendingCvs, $cv ) if !$cv->ready();
-			}
-
-			$self->{CVS} = \@pendingCvs;
-		}
-	);
 }
 
 ##
@@ -83,7 +59,7 @@ sub setupSimultaneousRead {
 		cb       => sub {
 			$self->{OWFS}->write( '/simultaneous/temperature', "1\n" );
 
-			# Schedule a read in 800 ms (at least 750ms needed for the devices to perform the read)
+# Schedule a read in 800 ms (at least 750ms needed for the devices to perform the read)
 			$self->{READ_TEMPERATURE_TIMER} = AnyEvent->timer(
 				after => 0.8,
 				cb    => sub {
@@ -124,14 +100,16 @@ sub readTemperatureDevices {
 
 					$value =~ s/ *//;
 
-					$self->debug("Temperature = '$value'");
 					return
 					  if ( defined $self->{TEMPERATURE_CACHE}->{$device}
 						&& $self->{TEMPERATURE_CACHE}->{$device} == $value );
 					$self->{TEMPERATURE_CACHE}->{$device} = $value;
 
+					my $topic = "sensors/temperature/1W${device}temperature";
+					$self->debug("Publish: '$topic'='$value'");
+
 					$self->{MQTT}->publish(
-						topic   => "sensors/temperature/${device}temperature",
+						topic   => $topic,
 						message => $value,
 						retain  => 1,
 						cv      => $cv,
@@ -153,7 +131,8 @@ sub connect {
 	syslog( LOG_INFO, "Connecting to owserver" );
 	my %ownetArgs = %{ $self->{ONEWIRE_CONFIG} };
 	$ownetArgs{on_error} = sub {
-		syslog( LOG_ERR, "Connection to owserver failed: " . join( ' ', @ARG ) );
+		syslog( LOG_ERR,
+			"Connection to owserver failed: " . join( ' ', @ARG ) );
 	};
 
 	$self->{OWFS} = AnyEvent::OWNet->new(%ownetArgs);
@@ -193,9 +172,6 @@ sub refreshDeviceCache {
 			push @{ $self->{DEVICES}->{$family} }, $dev;
 		}
 	);
-
-	# Block here, we can't have anything else reading the device cache until we're done
-	$cv->recv();
 }
 
 ##
@@ -229,6 +205,7 @@ sub readSwitchDevices {
 	my $cv = AnyEvent->condvar;
 
 	foreach my $family (@switchFamilies) {
+
 		#$self->debug("Reading switches for family '$family'");
 
 		next unless defined $self->{DEVICES}->{$family};
@@ -252,12 +229,14 @@ sub readSwitchDevices {
 					# Send the state to MQTT if it has changed
 					for ( my $gpio = 0 ; $gpio < @bits ; $gpio++ ) {
 						my $dev   = "$deviceName.$gpio";
-						my $topic = "switches/${dev}/state";
+						my $topic = "switches/1W${dev}/state";
 						my $state = $bits[$gpio];
-						if ( ( $self->{SWITCH_CACHE}->{$topic} // -1 ) != $state ) {
+						if ( ( $self->{SWITCH_CACHE}->{$topic} // -1 ) !=
+							$state )
+						{
 							if ( defined $self->{SWITCH_CACHE}->{$topic} ) {
 								$self->{MQTT}->publish(
-									topic   => "switches/${dev}/toggle",
+									topic   => "switches/1W${dev}/toggle",
 									message => 1,
 									cv      => $cv,
 								);
@@ -296,7 +275,6 @@ sub setupReadSwitchDevices {
 			$self->readSwitchDevices();
 		}
 	);
-
 }
 
 ##
@@ -306,10 +284,7 @@ sub setupReadSwitchDevices {
 sub setGpioState {
 	my ( $self, $topic, $message ) = @ARG;
 
-	$topic =~ /onoff\/(.+)\.(\d)\/state/ or do {
-		warn "unrecogised topic '$topic'";
-		return;
-	};
+	$topic =~ /onoff\/1W(.+)\.(\d)\/state/ or return;
 	my $device = $1;
 	my $gpio   = $2;
 	$message = $message ? 1 : 0;
@@ -317,7 +292,7 @@ sub setGpioState {
 
 	$self->{GPIO_CACHE}->{$path} = $message;
 
-	#warn "Set '$path' to '$message'";
+	#$self->debug("Set '$path' to '$message'");
 
 	my $cv = $self->{OWFS}->write( $path, "$message\n" );
 	push @{ $self->{CVS} }, $cv;
@@ -330,23 +305,21 @@ sub setGpioState {
 sub toggleGpioState {
 	my ( $self, $topic ) = @ARG;
 
-	$topic =~ /onoff\/(.+)\.(\d)\/toggle/ or do {
-		warn "unrecogised topic '$topic'";
-		return;
-	};
+	$topic =~ /onoff\/1W(.+)\.(\d)\/toggle/ or return;
 	my $device = $1;
 	my $gpio   = $2;
 	my $path   = "/${device}/PIO.${gpio}";
 
 	if ( !defined $self->{GPIO_CACHE}->{$path} ) {
-		my $cv = $self->{OWFS}->read( "/uncached/${device}/PIO.${gpio}", sub { $self->{GPIO_CACHE}->{$path} = $ARG[0]; } );
+		my $cv = $self->{OWFS}->read( "/uncached/${device}/PIO.${gpio}",
+			sub { $self->{GPIO_CACHE}->{$path} = $ARG[0]; } );
 		$cv->recv();
 	}
 
 	my $state = $self->{GPIO_CACHE}->{$path} ? '0' : '1';
 
 	my $cv = $self->{MQTT}->publish(
-		topic   => "onoff/${device}.${gpio}/state",
+		topic   => "onoff/1W${device}.${gpio}/state",
 		message => $state,
 		retain  => 1,
 	);
