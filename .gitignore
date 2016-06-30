@@ -6,3 +6,5 @@ deps
 Makefile
 sql
 ha.db
+wemo.db
+
