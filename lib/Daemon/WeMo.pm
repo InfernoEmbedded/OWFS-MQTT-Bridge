@@ -145,7 +145,9 @@ sub refreshDeviceCache {
 	$self->{DEVICES}->{sensor} = {};
 
 	my $discovered = $self->{DISCOVER}->search();
-	$self->{DISCOVER}->save('wemo.db');
+	if (keys %{$discovered} > 0) {
+		$self->{DISCOVER}->save('wemo.db');
+	}
 
 	foreach my $ip ( keys %{$discovered} ) {
 		my $device = $discovered->{$ip};
