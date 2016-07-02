@@ -16,6 +16,7 @@ use AnyEvent::MQTT;
 
 use Daemon::OneWire;
 use Daemon::WeMo;
+use Daemon::Shutter;
 use Daemon::Logger;
 use Daemon::Mapper;
 
@@ -23,6 +24,8 @@ my $config;
 
 my $install;
 my $upgrade;
+
+my @children;
 
 ##
 # Read in the config file
@@ -60,9 +63,6 @@ openlog( 'ndelay,pid', LOG_DAEMON );
 syslog( LOG_DEBUG, 'loading config' );
 loadConfig();
 
-my %threads;
-my @children;
-
 my $oneWireConfig = $config->{'1wire'};
 my $wemoConfig    = $config->{'wemo'};
 my $dbConfig      = $config->{'database'};
@@ -75,15 +75,14 @@ $mqttConfig{on_error} = sub {
 };
 $mqttConfig{client_id} = 'HomeAutomation Central';
 
-my $logger =
-  new Daemon::Logger( $generalConfig, $dbConfig, \%mqttConfig );
+my $logger = new Daemon::Logger( $generalConfig, $dbConfig, \%mqttConfig );
 if ($install) {
 	$logger->installDatabase($dbConfig)
 	  or die "DB creation failed";
 }
 push @children, $logger->run();
 
-my $mapper = new Daemon::Mapper($generalConfig, $dbConfig, \%mqttConfig );
+my $mapper = new Daemon::Mapper( $generalConfig, $dbConfig, \%mqttConfig );
 push @children, $mapper->run();
 
 if ( defined $wemoConfig ) {
@@ -97,16 +96,8 @@ if ( defined $oneWireConfig ) {
 	my $oneWire = new Daemon::OneWire( $generalConfig, $oneWireConfig, $mqtt );
 }
 
+my $shutter = new Daemon::Shutter( $generalConfig, $mqtt );
 
-$SIG{KILL} = sub {
-	warn "Stop requested, killing children\n";
-
-	kill '-KILL', @children;
-	foreach my $child (@children) {
-		warn "Waiting for '$child'\n";
-		waitpid $child, 0;
-	}
-};
 
 AnyEvent::Loop::run;
 

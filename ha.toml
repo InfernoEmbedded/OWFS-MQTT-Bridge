@@ -19,5 +19,5 @@
 	password=""
 
 [wemo]
-	debug=true
+	debug=0
 	switch_period=1 # seconds
