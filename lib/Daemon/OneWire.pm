@@ -3,7 +3,6 @@ package Daemon::OneWire;
 use strict;
 use warnings;
 use English;
-use Sys::Syslog qw(:standard :macros);
 
 use AnyEvent;
 use AnyEvent::MQTT;
@@ -26,6 +25,8 @@ sub new {
 	$self->{SENSOR_PERIOD}  = $oneWireConfig->{sensor_period} // 30;
 	$self->{SWITCH_PERIOD}  = $oneWireConfig->{switch_period} // 0.05;
 	$self->{DEBUG}          = $oneWireConfig->{debug};
+
+	$self->debug("OneWire started, switch period='$self->{SWITCH_PERIOD}' sensor period='$self->{SENSOR_PERIOD}'");
 
 	$self->{MQTT} = $mqtt;
 
@@ -81,13 +82,13 @@ sub readTemperatureDevices {
 
 	foreach my $family (@temperatureFamilies) {
 
-		$self->debug("Reading temperatures, family='$family'");
+		#$self->debug("Reading temperatures, family='$family'");
 		next unless defined $self->{DEVICES}->{$family};
 
 		my @devices = @{ $self->{DEVICES}->{$family} };
 		foreach my $device (@devices) {
 
-			$self->debug("Reading temperature for device '$device'");
+			#$self->debug("Reading temperature for device '$device'");
 			$self->{OWFS}->read(
 				$device . 'temperature',
 				sub {
@@ -128,11 +129,10 @@ sub readTemperatureDevices {
 sub connect {
 	my ($self) = @ARG;
 
-	syslog( LOG_INFO, "Connecting to owserver" );
+	$self->log("Connecting to owserver" );
 	my %ownetArgs = %{ $self->{ONEWIRE_CONFIG} };
 	$ownetArgs{on_error} = sub {
-		syslog( LOG_ERR,
-			"Connection to owserver failed: " . join( ' ', @ARG ) );
+		$self->logError("Connection to owserver failed: " . join( ' ', @ARG ) );
 	};
 
 	$self->{OWFS} = AnyEvent::OWNet->new(%ownetArgs);

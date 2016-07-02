@@ -4,6 +4,8 @@ use strict;
 use warnings;
 use English;
 
+use Sys::Syslog qw(:standard :macros);
+
 use AnyEvent;
 
 use DateTime;
@@ -26,6 +28,8 @@ sub new {
 	$self->{CVS} = [];
 	$self->setupCVCleanup();
 
+	openlog( 'ndelay,pid', LOG_DAEMON );
+
 	return $self;
 }
 
@@ -39,6 +43,21 @@ sub debug {
 	warn $self->getCurrentTimeLog(), ': ', @args, "\n";
 }
 
+##
+# Write a debug message
+sub log {
+	my ($self, @args) = @ARG;
+
+	syslog( LOG_DAEMON, join(' ', @args) );
+}
+
+##
+# Write a debug message
+sub logError {
+	my ($self, @args) = @ARG;
+
+	syslog( LOG_ERR, join(' ', @args) );
+}
 
 ##
 # Clean up any outstanding CVs
