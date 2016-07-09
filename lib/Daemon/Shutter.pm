@@ -10,15 +10,12 @@ use AnyEvent::Loop;
 
 use JSON::Parse;
 
-use DB::Schema;
-
 use base 'Daemon';
 
 ##
 # Create a new shutter daemon
 # @param class the class of this object
 # @param generalConfig the general configuration
-# @param dbConfig the database config
 # @param mqtt the MQTT instance
 sub new {
 	my ( $class, $generalConfig, $mqtt) = @ARG;
