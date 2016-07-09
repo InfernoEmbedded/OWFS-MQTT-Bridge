@@ -16,6 +16,7 @@ use AnyEvent::MQTT;
 
 use Daemon::OneWire;
 use Daemon::WeMo;
+use Daemon::Scene;
 use Daemon::Shutter;
 use Daemon::Logger;
 use Daemon::Mapper;
@@ -96,6 +97,7 @@ if ( defined $oneWireConfig ) {
 	my $oneWire = new Daemon::OneWire( $generalConfig, $oneWireConfig, $mqtt );
 }
 
+my $scene = new Daemon::Scene( $generalConfig, $mqtt );
 my $shutter = new Daemon::Shutter( $generalConfig, $mqtt );
 
 
