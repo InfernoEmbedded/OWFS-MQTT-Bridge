@@ -8,8 +8,6 @@ use AnyEvent;
 use AnyEvent::MQTT;
 use AnyEvent::Loop;
 
-use JSON::Parse;
-
 use base 'Daemon';
 
 ##
