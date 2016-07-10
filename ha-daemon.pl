@@ -20,13 +20,34 @@ use Daemon::Scene;
 use Daemon::Shutter;
 use Daemon::Logger;
 use Daemon::Mapper;
+use Daemon::Scheduler;
 
 my $config;
 
 my $install;
 my $upgrade;
 
-my @children;
+my @children; # Child processes
+my @daemons; # Daemons to propagate signals to
+
+$SIG{KILL} = sub {
+	foreach my $daemon (@daemons) {
+		$daemon->kill();
+	}
+};
+
+$SIG{TERM} = sub {
+	foreach my $daemon (@daemons) {
+		$daemon->kill();
+	}
+};
+
+$SIG{INT} = sub {
+	foreach my $daemon (@daemons) {
+		$daemon->kill();
+	}
+};
+
 
 ##
 # Read in the config file
@@ -82,24 +103,33 @@ if ($install) {
 	  or die "DB creation failed";
 }
 push @children, $logger->run();
+push @daemons, $logger;
 
 my $mapper = new Daemon::Mapper( $generalConfig, $dbConfig, \%mqttConfig );
 push @children, $mapper->run();
+push @daemons, $mapper;
 
 if ( defined $wemoConfig ) {
 	my $wemo = new Daemon::WeMo( $generalConfig, $wemoConfig, \%mqttConfig );
 	push @children, $wemo->run();
+	push @daemons, $wemo;
 }
 
 my $mqtt = new AnyEvent::MQTT(%mqttConfig);
 
 if ( defined $oneWireConfig ) {
 	my $oneWire = new Daemon::OneWire( $generalConfig, $oneWireConfig, $mqtt );
+	push @daemons, $oneWire;
 }
 
 my $scene = new Daemon::Scene( $generalConfig, $mqtt );
-my $shutter = new Daemon::Shutter( $generalConfig, $mqtt );
+push @daemons, $scene;
 
+my $shutter = new Daemon::Shutter( $generalConfig, $mqtt );
+push @daemons, $shutter;
+
+my $scheduler = new Daemon::Scheduler( $generalConfig, $mqtt );
+push @daemons, $scheduler;
 
 AnyEvent::Loop::run;
 

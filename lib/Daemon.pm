@@ -104,4 +104,11 @@ sub getCurrentTimeLog {
 	return $self->getCurrentTimeDB();
 }
 
+##
+# Called when a KILL is received
+# Does nothing here, but can be overidden to extend the behavior
+sub kill {
+}
+
+
 1;
