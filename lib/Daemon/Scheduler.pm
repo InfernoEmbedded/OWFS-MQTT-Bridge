@@ -14,7 +14,7 @@ use JSON::Parse;
 use base 'Daemon';
 
 ##
-# Create a new scene daemon
+# Create a new Schedule daemon
 # @param class the class of this object
 # @param generalConfig the general configuration
 # @param mqtt the MQTT instance
