@@ -185,6 +185,8 @@ sub deactivateSchedule {
 sub kill {
 	my ($self) = @ARG;
 
+	return unless defined $self->{CRON_PID};
+
 	$self->debug("Killing child cron '$self->{CRON_PID}'");
 	kill 'KILL', $self->{CRON_PID};
 	$self->debug("waiting for Cron daemon '$self->{CRON_PID}' to die");
