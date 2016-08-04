@@ -1,0 +1,197 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="213"
+   height="59"
+   viewBox="0 0 213 59.000001"
+   id="svg2"
+   version="1.1"
+   inkscape:version="0.91 r13725"
+   sodipodi:docname="scheduler.svg">
+  <defs
+     id="defs4">
+    <linearGradient
+       id="linearGradient7614">
+      <stop
+         style="stop-color:#ffffff;stop-opacity:1.0000000;"
+         offset="0.0000000"
+         id="stop7616" />
+      <stop
+         id="stop7649"
+         offset="0.21590909"
+         style="stop-color:#ffffff;stop-opacity:1.0000000;" />
+      <stop
+         id="stop7632"
+         offset="0.50000000"
+         style="stop-color:#838383;stop-opacity:1.0000000;" />
+      <stop
+         style="stop-color:#838383;stop-opacity:0;"
+         offset="1"
+         id="stop7618" />
+    </linearGradient>
+    <linearGradient
+       id="linearGradient7608">
+      <stop
+         id="stop7610"
+         offset="0.0000000"
+         style="stop-color:#ffffff;stop-opacity:1.0000000;" />
+      <stop
+         style="stop-color:#e3e3e3;stop-opacity:1.0000000;"
+         offset="0.46022728"
+         id="stop7622" />
+      <stop
+         id="stop7624"
+         offset="0.61970556"
+         style="stop-color:#dadada;stop-opacity:0.67058824;" />
+      <stop
+         id="stop7612"
+         offset="1.0000000"
+         style="stop-color:#d1d1d1;stop-opacity:0.34285715;" />
+    </linearGradient>
+    <linearGradient
+       id="linearGradient7586">
+      <stop
+         style="stop-color:#525252;stop-opacity:1.0000000;"
+         offset="0.0000000"
+         id="stop7588" />
+      <stop
+         style="stop-color:#000000;stop-opacity:1.0000000;"
+         offset="1.0000000"
+         id="stop7590" />
+    </linearGradient>
+    <linearGradient
+       id="linearGradient11594">
+      <stop
+         id="stop11596"
+         offset="0"
+         style="stop-color:#ffffff;stop-opacity:1;" />
+      <stop
+         id="stop11598"
+         offset="1.0000000"
+         style="stop-color:#d1d1d1;stop-opacity:1.0000000;" />
+    </linearGradient>
+    <linearGradient
+       id="linearGradient11520">
+      <stop
+         id="stop11522"
+         offset="0.0000000"
+         style="stop-color:#fbfbfb;stop-opacity:1.0000000;" />
+      <stop
+         id="stop11524"
+         offset="1.0000000"
+         style="stop-color:#dcdcdc;stop-opacity:1.0000000;" />
+    </linearGradient>
+  </defs>
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="1.979899"
+     inkscape:cx="221.60715"
+     inkscape:cy="70.000004"
+     inkscape:document-units="px"
+     inkscape:current-layer="layer1"
+     showgrid="false"
+     inkscape:window-width="3840"
+     inkscape:window-height="1980"
+     inkscape:window-x="0"
+     inkscape:window-y="24"
+     inkscape:window-maximized="1"
+     units="px" />
+  <metadata
+     id="metadata7">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(0,-993.36216)">
+    <rect
+       style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:1.1959244px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       id="rect3508"
+       width="201.94693"
+       height="56.946934"
+       x="0.5979622"
+       y="994.81732"
+       rx="7.1757793"
+       ry="4.9828568" />
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-weight:normal;font-size:15px;line-height:125%;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       x="59.928574"
+       y="1028.2908"
+       id="text4310"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan4312"
+         x="59.928574"
+         y="1028.2908">label</tspan></text>
+    <circle
+       style="fill:none;stroke:#000000;stroke-width:1;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       id="out"
+       cx="207.22789"
+       cy="1023.7194"
+       r="4.7696061" />
+    <g
+       id="g5078"
+       transform="matrix(0.0569279,0,0,0.07172505,11.15592,1004.0577)">
+      <g
+         id="g5038">
+        <path
+           id="path5040"
+           d="m 160,256 -64,0 0,-64 64,0 0,64 z m 128,-64 -64,0 0,64 64,0 0,-64 z m 128,0 -64,0 0,64 64,0 0,-64 z m -256,96 -64,0 0,64 64,0 0,-64 z m 128,0 -64,0 0,64 64,0 0,-64 z m 128,0 -64,0 0,64 64,0 0,-64 z m -256,96 -64,0 0,64 64,0 0,-64 z m 128,0 -64,0 0,64 64,0 0,-64 z M 128,96 c 17.672,0 32,-14.313 32,-32 l 0,-32 C 160,14.312 145.672,0 128,0 110.328,0 96,14.313 96,32 l 0,32 c 0,17.688 14.328,32 32,32 z M 512,64 512,512 0,512 0,64 80,64 c 0,26.469 21.531,48 48,48 26.469,0 48,-21.531 48,-48 l 160,0 c 0,26.469 21.531,48 48,48 26.469,0 48,-21.531 48,-48 l 80,0 z m -32,96 -448,0 0,320 448,0 0,-320 z M 384,96 c 17.688,0 32,-14.313 32,-32 l 0,-32 C 416,14.312 401.688,0 384,0 366.312,0 352,14.313 352,32 l 0,32 c 0,17.688 14.312,32 32,32 z"
+           inkscape:connector-curvature="0" />
+      </g>
+      <g
+         id="g5042" />
+      <g
+         id="g5044" />
+      <g
+         id="g5046" />
+      <g
+         id="g5048" />
+      <g
+         id="g5050" />
+      <g
+         id="g5052" />
+      <g
+         id="g5054" />
+      <g
+         id="g5056" />
+      <g
+         id="g5058" />
+      <g
+         id="g5060" />
+      <g
+         id="g5062" />
+      <g
+         id="g5064" />
+      <g
+         id="g5066" />
+      <g
+         id="g5068" />
+      <g
+         id="g5070" />
+    </g>
+  </g>
+</svg>

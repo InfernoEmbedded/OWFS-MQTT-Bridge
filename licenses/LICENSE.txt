@@ -618,3 +618,19 @@ an absolute waiver of all civil liability in connection with the
 Program, unless a warranty or assumption of liability accompanies a
 copy of the Program in return for a fee.
 
+
+====================================================================
+webroot/images/switch.svg
+https://commons.wikimedia.org/wiki/Category:Light_switch_icons
+By The people from the Tango! project (The Tango! Desktop Project) [Public domain], via Wikimedia Commons
+
+webroot/images/light.svg
+https://commons.wikimedia.org/wiki/File:Gnome-dialog-information.svg
+
+webroot/images/stopwatch.svg
+https://commons.wikimedia.org/wiki/File:Simpleicons_Business_stopwatch.svg
+
+webroot/images/calendar.svg
+https://commons.wikimedia.org/wiki/File:Simpleicons_Business_weekly-calendar.svg
+
+

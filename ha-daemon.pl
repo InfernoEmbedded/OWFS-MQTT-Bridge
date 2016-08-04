@@ -21,6 +21,7 @@ use Daemon::Shutter;
 use Daemon::Logger;
 use Daemon::Mapper;
 use Daemon::Scheduler;
+use Daemon::WebServer;
 
 my $config;
 
@@ -34,18 +35,24 @@ $SIG{KILL} = sub {
 	foreach my $daemon (@daemons) {
 		$daemon->kill();
 	}
+
+	exit 1;
 };
 
 $SIG{TERM} = sub {
 	foreach my $daemon (@daemons) {
 		$daemon->kill();
 	}
+
+	exit 1;
 };
 
 $SIG{INT} = sub {
 	foreach my $daemon (@daemons) {
 		$daemon->kill();
 	}
+
+	exit 1;
 };
 
 
@@ -87,6 +94,7 @@ loadConfig();
 
 my $oneWireConfig = $config->{'1wire'};
 my $wemoConfig    = $config->{'wemo'};
+my $httpConfig    = $config->{'http'};
 my $dbConfig      = $config->{'database'};
 our $generalConfig = $config->{'general'};
 
@@ -130,6 +138,9 @@ push @daemons, $shutter;
 
 my $scheduler = new Daemon::Scheduler( $generalConfig, $mqtt );
 push @daemons, $scheduler;
+
+my $webServer = new Daemon::WebServer( $generalConfig, $httpConfig, \%mqttConfig );
+push @daemons, $webServer;
 
 AnyEvent::Loop::run;
 
