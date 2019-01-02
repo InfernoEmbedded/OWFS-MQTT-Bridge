@@ -1,3 +1,4 @@
 Fedora
-dnf install perl-AnyEvent perl-HTML-Template-Pro perl-App-cpanminus.noarch libwebsockets-devel
-dzil listdeps | cpanm
+dnf install perl-AnyEvent perl-App-cpanminus.noarch perl-Dist-Zilla perl-File-Slurp.noarch perl-DateTime-Format-Strptime.noarch
+dzil listdeps | cpanm --sudo
+

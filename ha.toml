@@ -14,16 +14,3 @@
 	port=1883
 	websocket_host="localhost"
 	websocket_port=8081
-
-
-[database]
-	dsn="dbi:SQLite:ha.db"
-	user=""
-	password=""
-
-[wemo]
-	debug=0
-	switch_period=1 # seconds
-
-[http]
-	port=8080

@@ -15,13 +15,7 @@ use AnyEvent::Loop;
 use AnyEvent::MQTT;
 
 use Daemon::OneWire;
-use Daemon::WeMo;
-use Daemon::Scene;
 use Daemon::Shutter;
-use Daemon::Logger;
-use Daemon::Mapper;
-use Daemon::Scheduler;
-use Daemon::WebServer;
 
 my $config;
 
@@ -79,6 +73,8 @@ sub loadConfig {
 	-f $file or $file = '/etc/ha.toml';
 	-f $file or die "Could not find config file";
 
+	syslog( LOG_DEBUG, "loading config from '$file'");
+
 	readConfig($file);
 }
 
@@ -89,13 +85,9 @@ GetOptions(
 
 openlog( 'ndelay,pid', LOG_DAEMON );
 
-syslog( LOG_DEBUG, 'loading config' );
 loadConfig();
 
 my $oneWireConfig = $config->{'1wire'};
-my $wemoConfig    = $config->{'wemo'};
-my $httpConfig    = $config->{'http'};
-my $dbConfig      = $config->{'database'};
 our $generalConfig = $config->{'general'};
 
 my %mqttConfig = %{ $config->{'mqtt'} };
@@ -105,24 +97,6 @@ $mqttConfig{on_error} = sub {
 };
 $mqttConfig{client_id} = 'HomeAutomation Central';
 
-my $logger = new Daemon::Logger( $generalConfig, $dbConfig, \%mqttConfig );
-if ($install) {
-	$logger->installDatabase($dbConfig)
-	  or die "DB creation failed";
-}
-push @children, $logger->run();
-push @daemons, $logger;
-
-my $mapper = new Daemon::Mapper( $generalConfig, $dbConfig, \%mqttConfig );
-push @children, $mapper->run();
-push @daemons, $mapper;
-
-if ( defined $wemoConfig ) {
-	my $wemo = new Daemon::WeMo( $generalConfig, $wemoConfig, \%mqttConfig );
-	push @children, $wemo->run();
-	push @daemons, $wemo;
-}
-
 my $mqtt = new AnyEvent::MQTT(%mqttConfig);
 
 if ( defined $oneWireConfig ) {
@@ -130,17 +104,8 @@ if ( defined $oneWireConfig ) {
 	push @daemons, $oneWire;
 }
 
-my $scene = new Daemon::Scene( $generalConfig, $mqtt );
-push @daemons, $scene;
-
 my $shutter = new Daemon::Shutter( $generalConfig, $mqtt );
 push @daemons, $shutter;
-
-my $scheduler = new Daemon::Scheduler( $generalConfig, $mqtt );
-push @daemons, $scheduler;
-
-my $webServer = new Daemon::WebServer( $generalConfig, $httpConfig, \%mqttConfig );
-push @daemons, $webServer;
 
 AnyEvent::Loop::run;
 
