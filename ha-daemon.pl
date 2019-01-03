@@ -95,7 +95,7 @@ $mqttConfig{on_error} = sub {
 	my ( $fatal, $message ) = @ARG;
 	warn("MQTT error on $mqttConfig{host}:$mqttConfig{port}: $message");
 };
-$mqttConfig{client_id} = 'HomeAutomation Central';
+$mqttConfig{client_id} = 'OWFS MQTT Bridge';
 
 my $mqtt = new AnyEvent::MQTT(%mqttConfig);
 

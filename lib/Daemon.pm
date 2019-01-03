@@ -40,7 +40,9 @@ sub debug {
 
 	return unless $self->{DEBUG};
 
-	warn $self->getCurrentTimeLog(), ': ', @args, "\n";
+	my ($package, $filename, $line, $sub) = caller(1);
+
+	warn $self->getCurrentTimeLog(), ": $filename:$line:$sub(): ", @args, "\n";
 }
 
 ##
@@ -56,6 +58,7 @@ sub log {
 sub logError {
 	my ($self, @args) = @ARG;
 
+	$self->debug(@args);
 	syslog( LOG_ERR, join(' ', @args) );
 }
 

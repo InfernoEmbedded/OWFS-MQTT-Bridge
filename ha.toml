@@ -1,16 +1,15 @@
 [general]
 	timezone="Australia/Sydney"
+	discovery_prefix="homeassistant"
 
 [1wire]
 	host="localhost"
 	port=4304
 	timeout=5 # seconds, will reconnect after this if no response
 	sensor_period=30 # seconds
-	switch_period=0.1 # seconds
+	switch_period=10 # seconds
 	debug=true
 
 [mqtt]
 	host="localhost"
 	port=1883
-	websocket_host="localhost"
-	websocket_port=8081
