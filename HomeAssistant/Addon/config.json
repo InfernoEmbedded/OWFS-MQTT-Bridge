@@ -1,0 +1,11 @@
+{
+  "name": "OWFS->MQTT Bridge",
+  "version": "1",
+  "slug": "owfs2mqtt",
+  "description": "A bridge between OWFS & MQTT",
+  "devices": "/dev/i2c-0:/dev/i2c-0:rwm",
+  "startup": "application",
+  "boot": "auto",
+  "options": {},
+  "schema": {}
+}
