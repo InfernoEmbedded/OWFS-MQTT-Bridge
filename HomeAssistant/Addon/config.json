@@ -1,11 +1,28 @@
 {
   "name": "OWFS->MQTT Bridge",
-  "version": "1",
+  "version": "1.6",
   "slug": "owfs2mqtt",
   "description": "A bridge between OWFS & MQTT",
-  "devices": "/dev/i2c-0:/dev/i2c-0:rwm",
+  "devices": ["/dev/i2c-0:/dev/i2c-0:rwm"],
   "startup": "application",
   "boot": "auto",
-  "options": {},
-  "schema": {}
+  "discovery": ["mqtt"],
+  "options": {
+    "owserver_args": "--i2c=/dev/i2c-0:18",
+    "switch_period": "0.2",
+    "sensor_period": "30",
+    "mqtt_host": "homeassistant",
+    "mqtt_port": 1883,
+    "mqtt_username": "",
+    "mqtt_password": ""
+  },
+  "schema": {
+    "owserver_args": "str",
+    "switch_period": "float",
+    "sensor_period": "float",
+    "mqtt_host": "str",
+    "mqtt_port": "port",
+    "mqtt_username": "str",
+    "mqtt_password": "str"
+  }
 }
