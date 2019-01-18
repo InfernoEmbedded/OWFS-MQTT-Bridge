@@ -401,7 +401,7 @@ sub registerTemperatureDevice {
 
 			my $message = <<EOF;
 {
-	"name": "${device}_temperature",
+	"name": "temperature_${device}",
 	"state_topic": "temperature/$device/state",
 	"unit_of_measurement": "°C"
 }
