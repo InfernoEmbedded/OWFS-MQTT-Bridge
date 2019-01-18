@@ -124,7 +124,7 @@ sub readTemperatureDevices {
 
 					return
 					  if ( defined $self->{TEMPERATURE_CACHE}->{$device}
-						&& $self->{TEMPERATURE_CACHE}->{$device} != $value );
+						&& $self->{TEMPERATURE_CACHE}->{$device} == $value );
 					$self->{TEMPERATURE_CACHE}->{$device} = $value;
 
 					my $topic = "temperature/${device}/state";
