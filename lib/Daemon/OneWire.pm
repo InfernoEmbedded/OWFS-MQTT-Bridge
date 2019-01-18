@@ -37,6 +37,7 @@ sub new {
 	$self->{SWITCH_MASTER_CACHE} = {};
 	$self->{GPIO_CACHE}        = {};
 	$self->{TEMPERATURE_CACHE} = {};
+	$self->{DISCOVERY_CACHE}   = {};
 	$self->{DEVICES}           = {};
 	$self->{REGISTER_CACHE}    = {};
 
@@ -111,7 +112,7 @@ sub readTemperatureDevices {
 
 					return
 					  if ( defined $self->{TEMPERATURE_CACHE}->{$device}
-						&& $self->{TEMPERATURE_CACHE}->{$device} == $value );
+						&& $self->{TEMPERATURE_CACHE}->{$device} != $value );
 					$self->{TEMPERATURE_CACHE}->{$device} = $value;
 
 					my $topic = "temperature/${device}/state";
@@ -357,7 +358,36 @@ sub refreshIESwitchMaster {
 			);
 		}
 	);
+}
 
+
+##
+# Register temperature sensors with HomeAssistant MQTT discovery
+# @param device the device address
+sub registerTemperatureSensor {
+	my ($self, $device) = @ARG;
+
+	if (defined ($self->{DISCOVERY_CACHE}->{$device})) {
+		return;
+	}
+
+	$self->{DISCOVERY_CACHE}->{$device} = 1;
+
+	my $topic = $self->{GENERAL_CONFIG}->{discovery_prefix} . "/sensor/${device}/config";
+
+	my $message = <<EOF;
+{
+	"device_class": "sensor",
+	"state_topic": "sensors/temperature/${device}",
+	"unit_of_measurement": "°C"
+};
+EOF
+
+	my $cv = $self->{MQTT}->publish(
+		topic   => $topic,
+		message => $message,
+	);
+	push @{ $self->{CVS} }, $cv;
 }
 
 ##
@@ -828,6 +858,32 @@ sub powerOnResetIE {
 }
 
 ##
+# Clear High temperature alarms from temperature sensors
+# @param dev the device to clear alarms for
+sub clearHighTemperatureAlarms {
+	my ($self, $dev) = @ARG;
+
+	$self->{OWFS}->write(
+		"/$dev/temphigh",
+		"125",
+		sub {}
+	);
+}
+
+##
+# Clear alarms from temperature sensors
+# @param dev the device to clear alarms for
+sub clearTemperatureAlarms {
+	my ($self, $dev) = @ARG;
+
+	$self->{OWFS}->write(
+		"/$dev/templow",
+		"-55",
+		sub {$self->clearHighTemperatureAlarms($dev);}
+	);
+}
+
+##
 # Read all switch devices and push them to MQTT
 sub readSwitchDevices {
 	my ($self) = @ARG;
@@ -868,6 +924,10 @@ sub readSwitchDevices {
 						}
 					}
 				);
+			}
+
+			if ($family eq '28') { # Temperature devices, disable alarms
+				$self->clearTemperatureAlarms($dev);
 			}
 		},
 		'/alarm/', $cv
