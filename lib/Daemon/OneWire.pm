@@ -42,13 +42,18 @@ sub new {
 	$self->{REGISTER_CACHE}    = {};
 
 	$self->connect();
+	$self->debug("Starting device cache refresh");
 	$self->setupRefreshDeviceCache();
 
 	# Set up listeners
+	$self->debug("Starting switch subscriptions");
 	$self->setupSwitchSubscriptions();
 
 	# Kick off tasks
+	$self->debug("Starting simultaneous temperature read");
 	$self->setupSimultaneousRead();
+
+	$self->debug("Starting read switches");
 	$self->setupReadSwitchDevices();
 
 	return $self;
