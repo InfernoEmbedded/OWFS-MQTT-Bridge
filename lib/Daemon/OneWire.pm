@@ -69,13 +69,17 @@ sub setupSimultaneousRead {
 		after    => 0,
 		interval => $self->{SENSOR_PERIOD},
 		cb       => sub {
-			$self->{OWFS}->write( '/simultaneous/temperature', "1\n" );
-
+			$self->{OWFS}->write(
+				'/simultaneous/temperature',
+				"1\n",
+				sub {
 # Schedule a read in 800 ms (at least 750ms needed for the devices to perform the read)
-			$self->{READ_TEMPERATURE_TIMER} = AnyEvent->timer(
-				after => 0.8,
-				cb    => sub {
-					$self->readTemperatureDevices();
+					$self->{READ_TEMPERATURE_TIMER} = AnyEvent->timer(
+						after => 0.8,
+						cb    => sub {
+							$self->readTemperatureDevices();
+						}
+					);
 				}
 			);
 		}
