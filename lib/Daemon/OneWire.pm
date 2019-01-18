@@ -370,36 +370,6 @@ sub refreshIESwitchMaster {
 	);
 }
 
-
-##
-# Register temperature sensors with HomeAssistant MQTT discovery
-# @param device the device address
-sub registerTemperatureSensor {
-	my ($self, $device) = @ARG;
-
-	if (defined ($self->{DISCOVERY_CACHE}->{$device})) {
-		return;
-	}
-
-	$self->{DISCOVERY_CACHE}->{$device} = 1;
-
-	my $topic = $self->{GENERAL_CONFIG}->{discovery_prefix} . "/sensor/${device}/config";
-
-	my $message = <<EOF;
-{
-	"device_class": "sensor",
-	"state_topic": "sensors/temperature/${device}",
-	"unit_of_measurement": "°C"
-};
-EOF
-
-	my $cv = $self->{MQTT}->publish(
-		topic   => $topic,
-		message => $message,
-	);
-	push @{ $self->{CVS} }, $cv;
-}
-
 ##
 # Handle device refresh for IE devices
 # @param dev the address of the device
@@ -426,13 +396,13 @@ sub registerTemperatureDevice {
 
 	$self->{REGISTER_CACHE}->{$device}->{REGISTERED_MQTT_DISCOVERY_TEMPERATURE} = 1;
 
-	my $topic = $self->{GENERAL_CONFIG}->{discovery_prefix} . "/sensor/${device}_temperature/config";
+	my $topic = $self->{GENERAL_CONFIG}->{discovery_prefix} . "/sensor/temperature_${device}/config";
 	$topic =~ s/\.//;
 
 			my $message = <<EOF;
 {
 	"name": "${device}_temperature",
-	"current_temperature_topic": "temperature/$device/state",
+	"state_topic": "temperature/$device/state",
 	"unit_of_measurement": "°C"
 }
 EOF
