@@ -93,6 +93,8 @@ foreach my $family (@temperatureFamilies) {
 sub readTemperatureDevices {
 	my ($self) = @ARG;
 
+	$self->debug("readTemperatureDevices");
+
 	my $cv = AnyEvent->condvar;
 
 	foreach my $family (@temperatureFamilies) {
