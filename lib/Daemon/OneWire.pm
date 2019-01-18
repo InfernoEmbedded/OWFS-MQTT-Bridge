@@ -111,21 +111,19 @@ sub readTemperatureDevices {
 
 			$self->debug("Reading temperature for device '$device'");
 			$self->{OWFS}->read(
-				$device . 'temperature',
+				$device . '/temperature',
 				sub {
-					my ($res) = @ARG;
-
-					$cv->begin();
-
-					my $value = $res->{data};
+					my ($value) = $ARG[0]->data;
 					return unless defined $value;
 
 					$value =~ s/ *//;
 
-					return
-					  if ( defined $self->{TEMPERATURE_CACHE}->{$device}
-						&& $self->{TEMPERATURE_CACHE}->{$device} == $value );
+					if (defined $self->{TEMPERATURE_CACHE}->{$device} && $self->{TEMPERATURE_CACHE}->{$device} == $value ) {
+						return;
+					}
 					$self->{TEMPERATURE_CACHE}->{$device} = $value;
+
+					$cv->begin();
 
 					my $topic = "temperature/${device}/state";
 
