@@ -59,6 +59,7 @@ sub new {
 sub setupSimultaneousRead {
 	my ($self) = @ARG;
 
+	$self->debug("Starting simultaneous temperature read");
 	$self->{SIMULTANEOUS_TEMPERATURE_TIMER} = AnyEvent->timer(
 		after    => 0,
 		interval => $self->{SENSOR_PERIOD},
@@ -91,13 +92,13 @@ sub readTemperatureDevices {
 
 	foreach my $family (@temperatureFamilies) {
 
-		#$self->debug("Reading temperatures, family='$family'");
+		$self->debug("Reading temperatures, family='$family'");
 		next unless defined $self->{DEVICES}->{$family};
 
 		my @devices = @{ $self->{DEVICES}->{$family} };
 		foreach my $device (@devices) {
 
-			#$self->debug("Reading temperature for device '$device'");
+			$self->debug("Reading temperature for device '$device'");
 			$self->{OWFS}->read(
 				$device . 'temperature',
 				sub {
