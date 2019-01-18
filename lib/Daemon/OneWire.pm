@@ -97,18 +97,14 @@ foreach my $family (@temperatureFamilies) {
 sub readTemperatureDevices {
 	my ($self) = @ARG;
 
-	$self->debug("readTemperatureDevices");
-
 	my $cv = AnyEvent->condvar;
 
 	foreach my $family (@temperatureFamilies) {
 
-		$self->debug("Reading temperatures, family='$family'");
 		next unless defined $self->{DEVICES}->{$family};
 
 		my @devices = @{ $self->{DEVICES}->{$family} };
 		foreach my $device (@devices) {
-
 			$self->debug("Reading temperature for device '$device'");
 			$self->{OWFS}->read(
 				$device . '/temperature',
